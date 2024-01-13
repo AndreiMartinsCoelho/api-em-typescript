@@ -1,4 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
+
+const hash = 10;
 
 export interface DadosEspeciais {
   cpf: string
@@ -30,5 +33,22 @@ const UsersSchema: Schema = new Schema({
   senha: { type: String, required: true },
   dados_especiais: { type: DadosEspeciaisSchema, required: true },
 }, { versionKey: false })
+
+UsersSchema.pre<users>('save', async function (next) {
+  try {
+    const hashedPassword = await bcrypt.hash(this.senha, hash)
+    this.senha = hashedPassword
+    next()
+  } catch (error) {
+    next()
+  }
+})
+
+//Remove a SENHA na resposta da API
+UsersSchema.methods.toJSON = function () {
+  const userObject = this.toObject()
+  delete userObject.senha
+  return userObject
+}
 
 export default mongoose.model<users>('users', UsersSchema)

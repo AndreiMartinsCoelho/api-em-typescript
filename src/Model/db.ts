@@ -1,11 +1,14 @@
 import mongoose, { Connection, Mongoose } from "mongoose";
+import dotenv from 'dotenv'
 let database: Connection;
+
+dotenv.config()
 
 export default async (): Promise<Connection> => {
     if (database) return database //If de uma linha = if(){}
 
     try {
-        const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/api_streaming"
+        const mongoURL = process.env.MONGO_URL
 
         // Conectando ao banco usando Mongoose
         const mongooseInstance: Mongoose = mongoose
