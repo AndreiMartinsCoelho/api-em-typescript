@@ -1,20 +1,21 @@
-import { connect } from "http2";
-import {Db, MongoClient} from "mongodb"
+import mongoose, { Connection, Mongoose } from "mongoose";
+let database: Connection;
 
-let Database: Db;
+export default async (): Promise<Connection> => {
+    if (database) return database //If de uma linha = if(){}
 
-export default async (): Promise<Db> =>{
-    if(Database) return Database;
-    const Db_Client = new MongoClient(`mongodb://${process.env.MONGO_HOST}`);
+    try {
+        const mongoURL = process.env.MONGO_URL || "mongodb://localhost:27017/api_streaming"
 
-    try{
-        console.log("Conectou no BD!");
-        await Db_Client.connect();
-    }catch(Error){
-        console.log("Não conectou no DB!");
-        throw Error;
+        // Conectando ao banco usando Mongoose
+        const mongooseInstance: Mongoose = mongoose
+        await mongooseInstance.connect(mongoURL)
+        console.log("Conectou ao DB!")
+
+        database = mongooseInstance.connection
+        return database
+    } catch (error) {
+        console.error("Erro ao conectar ao banco de dados:", error)
+        throw error
     }
-    
-    Database = Db_Client.db(process.env.MONGO_DATABASE);
-    return Database;
 }
