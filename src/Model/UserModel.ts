@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt';
 const hash = 10;
 
 export interface DadosEspeciais {
-  cpf: string
   data_nascimento: Date
   idade: number
   sexo: string
@@ -14,12 +13,12 @@ export interface users extends Document {
   nome: string
   email: string
   senha: string
+  cpf: string
   dados_especiais: DadosEspeciais
 }
 
 const DadosEspeciaisSchema: Schema = new Schema(
   {
-    cpf: { type: String, required: true },
     data_nascimento: { type: Date, required: true },
     idade: { type: Number, required: true },
     sexo: { type: String, required: true }
@@ -31,6 +30,7 @@ const UsersSchema: Schema = new Schema({
   nome: { type: String, required: true },
   email: { type: String, required: true },
   senha: { type: String, required: true },
+  cpf: { type: String, required: true },
   dados_especiais: { type: DadosEspeciaisSchema, required: true },
 }, { versionKey: false })
 
