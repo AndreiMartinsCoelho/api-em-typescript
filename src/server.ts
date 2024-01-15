@@ -1,8 +1,9 @@
 import express from 'express';
-import root from './Router/Root';
+import root from './Router/root';
 import user from './Router/user';
 import db from './Model/Db';
 import bodyParser from 'body-parser';
+import dotenv from 'dotenv'
 
 const app = express()
 app.use(bodyParser.json())
@@ -13,7 +14,7 @@ app.use(root)
 //Rodando as ROTAS do USER
 app.use(user)
 
-const PORT = 3000
+const PORT = process.env.PORT
 // Conectar ao banco de dados
 db().then(() => {
   // Iniciar o servidor depois de conectar ao banco de dados
