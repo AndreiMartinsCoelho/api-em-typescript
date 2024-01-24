@@ -4,7 +4,8 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-const SECRET_KEY = process.env.SECRET_KEY || "api"
+dotenv.config()
+const SECRET_KEY = process.env.SECRET_KEY || "neymar    "
 
 //Função para cadastrar um novo usuario...
 export const cadastro = async (req: Request, res: Response): Promise<void> => {
@@ -25,7 +26,6 @@ export const cadastro = async (req: Request, res: Response): Promise<void> => {
             return
         }
         else if(userExist){
-            console.log(userExist)
             res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!"})
             return
         }
@@ -48,6 +48,7 @@ export const cadastro = async (req: Request, res: Response): Promise<void> => {
     }
 }
 
+//Função para realizar login do usuario...
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
         const {cpf, senha} = req.body
@@ -68,6 +69,47 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         const token = jwt.sign({ userId: user._id, email: user.email }, SECRET_KEY, { expiresIn: '28800000' }) //Token expirando em 8h...
         res.status(200).json({ Msg: "Login feito com exito!", user, token})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({Erro: "Erro no servidor!"})
+    }
+}
+
+//Função para editar o perfil do usuario 
+export const edit_perfil = async (req: Request, res: Response): Promise<void> => {
+    const userId: String = req.params.id
+    const { nome, email, cpf, dados_especiais } = req.body
+    const userExist = await Users.findOne({cpf, email, nome})
+
+    const { data_nascimento, idade, sexo } = dados_especiais
+    const dadosEspeciais: DadosEspeciais = {
+        data_nascimento,
+        idade,
+        sexo,
+    }
+
+    try {
+        //Verificando se os campos estão em branco
+        if (!nome || !email || !cpf) {
+            res.status(400).json({ Erro: "Email e CPF e Nome são obrigatórios!"})
+            return
+        }
+        else if (!dados_especiais) {
+            res.status(400).json({ Erro: "Data de Nascimento, Idade e Sexo são dados obrigatórios!"})
+            return
+        }
+        else if(userExist){
+            res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!"})
+            return
+        }
+
+        //Avança se tudo estiver certo e manda para o banco de dados
+        const savedEdit = await Users.findByIdAndUpdate( 
+            userId, 
+            { nome, email, cpf, dados_especiais },
+            {new: true}
+        )
+        res.status(201).json({Msg:"Editado com sucesso", savedEdit});
     } catch (error) {
         console.log(error)
         res.status(500).json({Erro: "Erro no servidor!"})
