@@ -4,82 +4,78 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-dotenv.config()
-const SECRET_KEY = process.env.SECRET_KEY || "neymar    "
+dotenv.config();
+const SECRET_KEY = process.env.SECRET_KEY || "qualquer_coisa";
 
 //Função para cadastrar um novo usuario...
 export const cadastro = async (req: Request, res: Response): Promise<void> => {
+    const { nome, email, senha, confirmSenha, cpf, dados_especiais } = req.body
+    const userExist = await Users.findOne({ cpf, email, nome })
+
+    const { data_nascimento, idade, sexo } = dados_especiais
+    const dadosEspeciais: DadosEspeciais = {
+        data_nascimento,
+        idade,
+        sexo,
+    }
+    //Verifique se o usuario já existe...
     try {
-        const { nome, email, senha, confirmSenha, cpf, dados_especiais } = req.body
-        const userExist = await Users.findOne({cpf, email, nome})
         //Verifique se dados foram fornecidos
         if (!nome || !email || !senha || !cpf) {
-            res.status(400).json({ Erro: "A Senha, Email, CPF e Nome são obrigatórios!"})
+            res.status(400).json({ Erro: "A Senha, Email, CPF e Nome são obrigatórios!" })
             return
         }
         else if (!dados_especiais) {
-            res.status(400).json({ Erro: "Data de Nascimento, Idade e Sexo são dados obrigatórios!"})
+            res.status(400).json({ Erro: "Data de Nascimento, Idade e Sexo são dados obrigatórios!" })
             return
         }
-        else if(senha !== confirmSenha){
-            res.status(400).json({ Erro: "As senhas estão diferentes!"})
+        else if (senha !== confirmSenha) {
+            res.status(400).json({ Erro: "As senhas estão diferentes!" })
             return
         }
-        else if(userExist){
-            res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!"})
+        else if (userExist) {
+            res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!" })
             return
-        }
-
-        const { data_nascimento, idade, sexo } = dados_especiais
-
-        const dadosEspeciais: DadosEspeciais = {
-            data_nascimento,
-            idade,
-            sexo,
         }
 
         const newUser: User = new Users({ nome, email, senha, cpf, dados_especiais })
-
         const savedUser = await newUser.save()
-        res.status(201).json({Msg:"Registrado com sucesso!", savedUser})
+        res.status(201).json({ Msg: "Registrado com sucesso!", savedUser })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ Erro: "Erro no servidor!"})
+        res.status(500).json({ Erro: "Erro no servidor!" })
     }
 }
 
 //Função para realizar login do usuario...
 export const login = async (req: Request, res: Response): Promise<void> => {
+    const { cpf, senha } = req.body
+    const user = await Users.findOne({ cpf })
+
     try {
-        const {cpf, senha} = req.body
-
-        const user = await Users.findOne({cpf})
-
-        if(!user){
-            res.status(401).json({ Erro:"CPF informado está errado!"})
+        if (!user) {
+            res.status(401).json({ Erro: "CPF informado está errado!" })
             return
         }
-        
+
         const senhaValida = await bcrypt.compare(senha, user.senha)
 
         if (!senhaValida) {
-            res.status(401).json({ Erro:"Senha informado está errada!"})
+            res.status(401).json({ Erro: "Senha informado está errada!" })
             return
         }
 
         const token = jwt.sign({ userId: user._id, email: user.email }, SECRET_KEY, { expiresIn: '28800000' }) //Token expirando em 8h...
-        res.status(200).json({ Msg: "Login feito com exito!", user, token})
+        res.status(200).json({ Msg: "Login feito com exito!", user, token })
     } catch (error) {
-        console.log(error)
-        res.status(500).json({Erro: "Erro no servidor!"})
+        res.status(500).json({ Erro: "Erro no servidor!" })
     }
 }
 
-//Função para editar o perfil do usuario 
+//Função para editar o perfil do usuario...
 export const edit_perfil = async (req: Request, res: Response): Promise<void> => {
     const userId: String = req.params.id
     const { nome, email, cpf, dados_especiais } = req.body
-    const userExist = await Users.findOne({cpf, email, nome})
+    const userExist = await Users.findOne({ cpf, email, nome })
 
     const { data_nascimento, idade, sexo } = dados_especiais
     const dadosEspeciais: DadosEspeciais = {
@@ -89,29 +85,32 @@ export const edit_perfil = async (req: Request, res: Response): Promise<void> =>
     }
 
     try {
-        //Verificando se os campos estão em branco
+        //Verifique se dados foram fornecidos
         if (!nome || !email || !cpf) {
-            res.status(400).json({ Erro: "Email e CPF e Nome são obrigatórios!"})
+            res.status(400).json({ Erro: "Email e CPF e Nome são obrigatórios!" })
             return
         }
         else if (!dados_especiais) {
-            res.status(400).json({ Erro: "Data de Nascimento, Idade e Sexo são dados obrigatórios!"})
+            res.status(400).json({ Erro: "Data de Nascimento, Idade e Sexo são dados obrigatórios!" })
             return
         }
-        else if(userExist){
-            res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!"})
+        else if (userExist) {
+            res.status(400).json({ Erro: "Email, Cpf ou Nome já estão cadastrados!" })
             return
         }
 
-        //Avança se tudo estiver certo e manda para o banco de dados
-        const savedEdit = await Users.findByIdAndUpdate( 
-            userId, 
+        const savedEdit = await Users.findByIdAndUpdate(
+            userId,
             { nome, email, cpf, dados_especiais },
-            {new: true}
+            { new: true }
         )
-        res.status(201).json({Msg:"Editado com sucesso", savedEdit});
+        res.status(201).json({ Msg: "Editado com sucesso", savedEdit });
     } catch (error) {
-        console.log(error)
-        res.status(500).json({Erro: "Erro no servidor!"})
+        res.status(500).json({ Erro: "Erro no servidor!" })
     }
+}
+
+//Função para ver o pe4rfil do usuario...
+export const perfil = async (req: Request, res: Response): Promise<void> => {
+    
 }

@@ -1,0 +1,1 @@
+//As publis vão desde de listar para todos, editar, criar, deletar, pesquisar, privar, deixar publico, listar so para voce e fixar/desfixar do perfil

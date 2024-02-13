@@ -1,20 +1,22 @@
 import express from 'express';
 import root from './Router/root';
 import user from './Router/user';
+import publi from './Router/publi';
 import db from './Model/Db';
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 
-dotenv.config()
-
-const app = express()
-app.use(bodyParser.json())
-app.use(express.json())
+dotenv.config();
+const app = express();
+app.use(bodyParser.json());
+app.use(express.json());
 
 //Rodando a ROTA padrão da API
 app.use(root)
 //Rodando as ROTAS do USER
 app.use(user)
+//Rodando as ROTAS de PUBLI
+app.use(publi)
 
 const PORT = process.env.PORT
 // Conectar ao banco de dados

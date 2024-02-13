@@ -1,8 +1,8 @@
 import mongoose, { Connection, Mongoose } from "mongoose";
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 let database: Connection;
 
-dotenv.config()
+dotenv.config();
 
 export default async (): Promise<Connection> => {
     if (database) return database //If de uma linha = if(){}
