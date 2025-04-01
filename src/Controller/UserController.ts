@@ -48,12 +48,12 @@ export const cadastro = async (req: Request, res: Response): Promise<void> => {
 
 //Função para realizar login do usuario...
 export const login = async (req: Request, res: Response): Promise<void> => {
-    const { cpf, senha } = req.body
-    const user = await Users.findOne({ cpf })
+    const { email, senha } = req.body
+    const user = await Users.findOne({ email })
 
     try {
         if (!user) {
-            res.status(401).json({ Erro: "CPF informado está errado!" })
+            res.status(401).json({ Erro: "EMAIL informado está errado!" })
             return
         }
 
@@ -70,6 +70,44 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ Erro: "Erro no servidor!" })
     }
 }
+
+//Função para alterar a senha do perfil
+export const edit_senha = async (req: Request, res: Response): Promise<void> => {
+    const userId: string = req.params.id;
+    const { senhaAtual, senhaNova, confirmSenha, email } = req.body;
+    const userExist = await Users.findOne({ email });
+
+    try {
+        if (!userExist) {
+            res.status(404).json({ Erro: "Usuário não encontrado!" });
+            return;
+        }
+
+        if (senhaNova !== confirmSenha) {
+            res.status(400).json({ Erro: "As novas senhas não coincidem!" });
+            return;
+        }
+
+        const senhaAtualValida = await bcrypt.compare(senhaAtual, userExist.senha);
+        if (!senhaAtualValida) {
+            res.status(401).json({ Erro: "Senha atual incorreta!" });
+            return;
+        }
+
+        const senhaValida = await bcrypt.hash(senhaNova, 10);
+
+        const savedEdit = await Users.findByIdAndUpdate(
+            userId,
+            { senha: senhaValida },
+            { new: true }
+        );
+
+        res.status(200).json({ Msg: "Senha atualizada com sucesso!", savedEdit });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ Erro: "Erro no servidor!" });
+    }
+};
 
 //Função para editar o perfil do usuario...
 export const edit_perfil = async (req: Request, res: Response): Promise<void> => {
@@ -107,6 +145,7 @@ export const edit_perfil = async (req: Request, res: Response): Promise<void> =>
         res.status(201).json({ Msg: "Editado com sucesso", savedEdit });
     } catch (error) {
         res.status(500).json({ Erro: "Erro no servidor!" })
+        console.log(error)
     }
 }
 
