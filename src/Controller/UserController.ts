@@ -148,8 +148,3 @@ export const edit_perfil = async (req: Request, res: Response): Promise<void> =>
         console.log(error)
     }
 }
-
-//Função para ver o pe4rfil do usuario...
-export const perfil = async (req: Request, res: Response): Promise<void> => {
-    
-}
