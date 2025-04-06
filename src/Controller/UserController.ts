@@ -20,7 +20,7 @@ export const cadastro = async (req: Request, res: Response): Promise<void> => {
     }
     //Verifique se o usuario já existe...
     try {
-        //Verifique se dados foram fornecidos
+        //Verifique se dados foram fornecidos.
         if (!nome || !email || !senha || !cpf) {
             res.status(400).json({ Erro: "A Senha, Email, CPF e Nome são obrigatórios!" })
             return
